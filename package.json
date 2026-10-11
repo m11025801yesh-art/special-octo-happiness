@@ -1,0 +1,19 @@
+{
+  "name": "qianchuan-education-studio",
+  "version": "0.1.0",
+  "private": true,
+  "description": "面向教育产品的千川脚本研究与创作工作台",
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "start": "node --use-env-proxy server.mjs",
+    "dev": "node --use-env-proxy --watch server.mjs",
+    "test": "node --test test/*.test.mjs",
+    "check": "node --check server.mjs && node --check lib/domain.mjs && node --check lib/ai.mjs && node --check public/app.js"
+  },
+  "dependencies": {
+    "papaparse": "5.5.3"
+  }
+}
