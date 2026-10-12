@@ -24,6 +24,8 @@ with tempfile.TemporaryDirectory(prefix='qianchuan-browser-') as data_dir:
             page = browser.new_page(viewport={'width': 1440, 'height': 1000})
             page.on('pageerror', lambda error: errors.append(str(error)))
             page.goto(url)
+            expect(page.locator('h1').first).to_contain_text('把资料放进来')
+            page.locator('.sidebar [data-page="home"]').click()
             expect(page.locator('h1').first).to_contain_text('今天')
             page.locator('.sidebar [data-page="product"]').click()
             expect(page.locator('[name="price"]')).to_have_value('9.9 元（以用户最新说明为准；具体权益以当前购买页面为准）')

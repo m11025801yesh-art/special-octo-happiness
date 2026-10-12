@@ -5,8 +5,28 @@ import {emptyState,demoState} from '../lib/domain.mjs';
 import {createWorkspace} from '../lib/workspace.mjs';
 import {catalogScripts,mergeCatalog} from '../lib/catalog.mjs';
 import {scripts,batch} from '../config/script-catalog.mjs';
+import {analyzeVideo} from '../lib/ai.mjs';
 
 const profile=JSON.parse(fs.readFileSync(new URL('../config/product-profile.json',import.meta.url),'utf8'));
+test('手动保存产品原文和链接，视频先收藏再补文案，未提供内容时不调用模型',async()=>{
+ const initial=emptyState();initial.product=profile;const w=createWorkspace({initial});
+ await w.request('/api/product',{...profile,sourceNotes:'产品资料测试原文',sourceUrl:'https://example.com/product'});
+ assert.equal(w.getState().product.sourceNotes,'产品资料测试原文');
+ await w.request('/api/videos/link',{url:'分享这条视频 https://v.douyin.com/example/ 复制打开'});
+ const v=w.getState().videos[0];assert.equal(v.url,'https://v.douyin.com/example/');assert.equal(v.transcript,'');
+ await w.request('/api/videos/link',{url:v.url});assert.equal(w.getState().videos.length,1);
+ let called=false;await assert.rejects(analyzeVideo(v,async()=>{called=true;}),/补充逐字稿/);assert.equal(called,false);
+ await assert.rejects(w.request('/api/videos/link',{url:'javascript:alert(1)'}),/来源链接/);
+ await assert.rejects(w.request('/api/videos',{}),/至少填写/);
+ await w.request('/api/comments',{text:'测试评论：空间向量看不懂'});
+ await assert.rejects(w.request('/api/agent/create',{count:1,videoIds:[v.id]}),/待补逐字稿/);
+ await w.request('/api/videos/update',{id:v.id,title:'补齐后的参考',transcript:'这是一条测试逐字稿。'});
+ assert.equal(w.getState().videos.length,1);assert.equal(w.getState().videos[0].url,v.url);
+ assert.equal(w.getState().videos[0].transcript,'这是一条测试逐字稿。');
+ await w.request('/api/agent/create',{count:1,videoIds:[v.id]});
+ await assert.rejects(w.request('/api/videos/update',{id:v.id,transcript:'试图修改已引用资料'}),/已被脚本或 Agent/);
+ assert.equal(w.getState().videos[0].transcript,'这是一条测试逐字稿。');
+});
 test('20条Agent脚本均为完整成稿，来源为产品资料，不污染评论统计',()=>{
  const state=mergeCatalog(emptyState(),profile);
  assert.equal(state.scripts.length,20);assert.equal(new Set(state.scripts.map(s=>s.id)).size,20);

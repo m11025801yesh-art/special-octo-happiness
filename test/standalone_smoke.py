@@ -23,6 +23,29 @@ try:
   page.on('request',lambda r:requests.append(r.url))
   url=f'http://127.0.0.1:{server.server_port}/千川研习社-双击打开.html'
   page.goto(url)
+  expect(page.locator('h1')).to_contain_text('把资料放进来')
+  expect(page.locator('.material-grid .panel')).to_have_count(3)
+  page.locator('.material-grid [data-action="go-product"]').click()
+  page.locator('[name="sourceNotes"]').fill('这是浏览器测试产品原文，非真实新增权益。')
+  page.locator('[name="sourceUrl"]').fill('https://example.com/product')
+  page.locator('[data-form="product"] [type="submit"]').click()
+  expect(page.locator('#toast')).to_contain_text('已保存')
+  page.locator('.sidebar [data-page="materials"]').click()
+  page.locator('[data-action="add-link"]').click()
+  page.locator('dialog [name="url"]').fill('分享视频 https://v.douyin.com/example/ 复制后打开')
+  page.locator('dialog [type="submit"]').click()
+  expect(page.locator('dialog')).not_to_be_visible()
+  expect(page.locator('[data-action="edit-video"]')).to_have_count(1)
+  page.locator('[data-action="edit-video"]').click()
+  page.locator('dialog [name="title"]').fill('浏览器测试参考')
+  page.locator('dialog [name="transcript"]').fill('先找到问题，再看怎么解决。这是测试逐字稿。')
+  page.locator('dialog [type="submit"]').click()
+  expect(page.locator('dialog')).not_to_be_visible()
+  expect(page.locator('[data-action="edit-video"]')).to_have_count(0)
+  page.locator('.sidebar [data-page="videos"]').click()
+  expect(page.locator('.video-card')).to_have_count(1)
+  expect(page.locator('.video-card')).to_contain_text('浏览器测试参考')
+  page.locator('.sidebar [data-page="scripts"]').click()
   expect(page.locator('.script-item')).to_have_count(20)
   assert len(requests)==1,requests
   context.set_offline(True)
@@ -65,6 +88,9 @@ try:
   stored=page.evaluate('localStorage.getItem("qianchuan.personal.workspace.v1")')
   assert 'local-test-key-not-real' not in stored
   assert len(json.loads(stored)['scripts'])==21
+  assert json.loads(stored)['product']['sourceNotes']=='这是浏览器测试产品原文，非真实新增权益。'
+  assert len(json.loads(stored)['videos'])==1
+  assert json.loads(stored)['videos'][0]['transcript']=='先找到问题，再看怎么解决。这是测试逐字稿。'
   with page.expect_download() as download_info:page.locator('[data-action="export"]').click()
   exported=Path(download_info.value.path()).read_text()
   assert 'local-test-key-not-real' not in exported
@@ -79,7 +105,7 @@ try:
   page.set_viewport_size({'width':390,'height':844})
   assert page.evaluate('document.documentElement.scrollWidth<=innerWidth'),'mobile overflow'
   assert not errors,errors
-  print('PASS: 20 scripts, A7/B7/C6 filters, source labels, offline editing/versioning/reviews/comment import, local persistence, key excluded from storage/export and cleared on reload, mobile layout; no backend/API requests.')
+  print('PASS: materials landing, product source text/link, shared video link then transcript update; 20 scripts, A7/B7/C6, offline editing/reviews/comments, persistence, key isolation, mobile layout; no backend/API requests.')
   browser.close()
 finally:
  server.shutdown();server.server_close();thread.join(timeout=3)
