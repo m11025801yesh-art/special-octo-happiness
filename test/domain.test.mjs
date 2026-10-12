@@ -80,7 +80,7 @@ test('生成、自检、按需修订最多三次调用，保留完整来源与�
   assert.equal(s.scripts.length,0,'生成函数不应提前写入未完成草稿');
 });
 test('无需修订时两次模型调用；不允许关联其他脚本复盘',async()=>{
-  const s=demoState(),r=templateScript(s,{});let calls=0;
+  const s=demoState(),r=templateScript(s,{themeId:s.themes[0].id});let calls=0;
   const out=await generateScript(s,{themeId:s.themes[0].id},async()=>++calls===2?{needsRevision:false,issues:[],purchaseBarriers:[],nextTest:'对照测试'}:r);
   assert.equal(calls,2);assert.equal(out.attempts.length,2);
   s.scripts.push({id:'a',result:r});s.reviews.push({id:'review',scriptId:'b'});
