@@ -2,6 +2,8 @@
 
 This project uses Papa Parse 5.5.3: https://github.com/mholt/PapaParse
 
+The standalone build uses esbuild 0.25.12 (MIT) as a development tool: https://github.com/evanw/esbuild . The downloaded page does not require esbuild at runtime.
+
 The MIT License (MIT)
 
 Copyright (c) 2015 Matthew Holt

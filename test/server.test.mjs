@@ -7,7 +7,7 @@ import path from 'node:path';
 import { emptyState } from '../lib/domain.mjs';
 
 async function start(dataDir){
-  const child=spawn(process.execPath,['server.mjs'],{cwd:new URL('..',import.meta.url),env:{...process.env,PORT:'0',HOST:'127.0.0.1',DATA_DIR:dataDir,QIANCHUAN_AI_KEY:''},stdio:['ignore','pipe','pipe']});
+  const child=spawn(process.execPath,['server.mjs'],{cwd:new URL('..',import.meta.url),env:{...process.env,PORT:'0',HOST:'127.0.0.1',DATA_DIR:dataDir,QIANCHUAN_AI_KEY:'',QIANCHUAN_NO_CATALOG:'1'},stdio:['ignore','pipe','pipe']});
   const url=await new Promise((resolve,reject)=>{
     const timer=setTimeout(()=>{child.kill();reject(new Error('server startup timeout'));},5000);
     child.stdout.on('data',data=>{const match=data.toString().match(/127\.0\.0\.1:(\d+)/);if(match){clearTimeout(timer);resolve(`http://127.0.0.1:${match[1]}`);}});

@@ -11,9 +11,13 @@
     "start": "node --use-env-proxy server.mjs",
     "dev": "node --use-env-proxy --watch server.mjs",
     "test": "node --test test/*.test.mjs",
-    "check": "node --check server.mjs && node --check lib/domain.mjs && node --check lib/ai.mjs && node --check public/app.js"
+    "check": "node --check server.mjs && node --check lib/domain.mjs && node --check lib/ai.mjs && node --check lib/workspace.mjs && node --check lib/browser-entry.mjs && node --check public/app.js",
+    "build:standalone": "node scripts/build-standalone.mjs"
   },
   "dependencies": {
     "papaparse": "5.5.3"
+  },
+  "devDependencies": {
+    "esbuild": "0.25.12"
   }
 }

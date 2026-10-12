@@ -12,7 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 with tempfile.TemporaryDirectory(prefix='qianchuan-browser-') as data_dir:
     proc = subprocess.Popen(['node', 'server.mjs'], cwd=ROOT,
-        env={**os.environ, 'DATA_DIR': data_dir, 'PORT': '0', 'HOST': '127.0.0.1', 'QIANCHUAN_AI_KEY': ''},
+        env={**os.environ, 'DATA_DIR': data_dir, 'PORT': '0', 'HOST': '127.0.0.1', 'QIANCHUAN_AI_KEY': '', 'QIANCHUAN_NO_CATALOG': '1'},
         stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     try:
         line = proc.stdout.readline()

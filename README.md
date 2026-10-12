@@ -4,6 +4,16 @@
 
 已预填用户提供的「考点模型精讲练」资料：当前售价 9.9 元，纯虚拟交付，包含 200 个动态模型、9 节直播公开课、五科约 5000 分钟视频、1 对 1 学情诊断与规划、28 天规划营。旧文档里的价格、实物书与未核实承诺不作为当前权益。
 
+## 不懂编程，怎么打开
+
+使用交付的“千川研习社-直开版与20条脚本.zip”，先解压，再用电脑的 Chrome 或 Edge 打开“千川研习社-双击打开.html”。不要在聊天软件的附件预览窗口中运行。这个版本将页面和业务功能打包在一个文件里，不需要 Node.js、GitHub 或服务器。
+
+页面内置本次对话 Agent 创作的 **20 条完整脚本：A 线 7 条、B 线 7 条、C 线 6 条，共 100 个分镜**。可直接阅读、筛选、编辑和导出，无需模型密钥。每条附有产品资料来源、受众假设、素材要求和对照测试建议；没有把这些创意伪装成真实评论统计或已投放的爆款。
+
+另有 Word 和 Excel 成稿，方便拍摄和排期。当前云环境的受管理 Chromium 禁止 `file://` 导航，因此直开包使用“只提供同一静态文件、没有后台 API、加载后断网”的浏览器流程验证；没有绕过浏览器策略，也未声称在该云浏览器中验证了双击入口。普通电脑浏览器的具体设置仍可能影响文件打开和存储。
+
+**直开版的数据保存在当前浏览器**，与云服务数据分别保存；请使用同一浏览器打开同一路径的文件，并定期导出备份。密钥只在当前网页内存中，刷新后需重新填写。新增 AI 生成需要联网，浏览器直连服务商仍可能受跨域、地区和账号权限影响。手机附件预览器不一定运行网页脚本；当前没有部署公网网址。
+
 ## 怎么使用
 
 1. **产品档案**：查看和修改产品名、权益、售价、A/B/C 三条卖点线，以及证据和适用边界。当前购买跳转方式仍待确认。
@@ -51,6 +61,24 @@ npm start
 
 `npm run dev` 用于开发自动重启。首次启动从 `config/product-profile.json` 预填产品资料；已有工作台文件始终优先，不覆盖用户修改。
 
+云服务与直开版复用 `lib/workspace.mjs`，模型与领域逻辑共用。`config/script-catalog.mjs` 保存 20 条人工审阅的 Agent 脚本源稿，`lib/catalog.mjs` 将其转成工作台脚本版本；稳定 ID 保证不会反复添加或覆盖用户已有修改。测试可用 `QIANCHUAN_NO_CATALOG=1` 禁用服务端内置脚本，以隔离测试样本。
+
+重新构建直开包：
+
+```sh
+npm run build:standalone
+```
+
+重建 Word、Excel 和 Markdown 成稿（仅导出工具需要 Python 依赖）：
+
+```sh
+python3 -m pip install -r requirements-export.txt
+node scripts/export-script-data.mjs
+python3 scripts/export-script-documents.py
+```
+
+输出在 `dist/`，该目录不提交 Git。核心脚本源稿与构建、导出代码会提交。
+
 资料保存到 `.data/workspace.json`，写入使用临时文件加重命名。该目录被 Git 忽略。页面可导出全部资料及单条 Markdown 脚本、CSV 评论。服务重启保留数据，浏览器清缓存不会删除工作台数据。当前只支持单进程运行；没有跨实例共享或多用户隔离。
 
 ### AI 凭据与联网
@@ -81,6 +109,7 @@ npm test
 
 ```sh
 python3 test/browser_smoke.py
+python3 test/standalone_smoke.py
 ```
 
 浏览器测试需要 Python Playwright 和 Chromium，默认位置 `/usr/bin/chromium`，可用 `CHROMIUM_PATH` 指定。云环境已提供这些测试工具；普通部署运行网页不需要安装 Playwright。
