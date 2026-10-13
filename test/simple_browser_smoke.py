@@ -20,13 +20,17 @@ def respond(route):
  data=json.loads(raw);calls.append(task)
  if task.startswith('简洁创作：先学习'):
   r={'audience':'高中家长','requirementsSummary':'一条45秒，主打诊断','count':1,'angles':['诊断先于加量'],'productFacts':[{'claim':'提供诊断','quote':'学情诊断'}],'referenceLessons':[{'quote':'先看问题','lesson':'问题先行'}]}
+ elif task.startswith('分析该视频'):
+  r={'structure':'场景问题 → 操作演示','hook':'先看问题','format':'文案推测，未看画面','style':['短句'],'beats':[{'part':'场景问题','quote':'先看问题','mechanism':'问题先行'}],'hypotheses':['可能引发共鸣'],'limits':['无真实表现数据'],'transfer':'展示诊断过程'}
+ elif task.startswith('融合调研'):
+  r={'strategies':[{'index':x['index'],'themeId':'','videoId':data['videos'][0]['id'],'featureQuote':'学情诊断','fit':'直接对应','angle':x['angle'],'mechanism':'诊断定位问题','demonstration':'展示报告与规划','rationale':'按需求匹配，效果待验证','competitorIds':[],'researchQuestions':['补充报告样例']} for x in data['slots']]}
  elif task.startswith('简洁创作：现在换成'):
   audits+=1
   if audits==2:
    route.fulfill(status=429,content_type='application/json',body='{}');return
   r={'persuasive':audits>1,'reason':'我还不信' if audits==1 else '现在能看清诊断如何交付，愿意进一步了解','issues':['增加具体演示'] if audits==1 else [],'purchaseBarriers':[],'blockingEvidence':[],'nextTest':'测试不同开头'}
  else:
-  r={'script':{'title':'先看孩子卡在哪里','angle':'把诊断说具体','structure':'问题 → 演示 → 引导','sourceCommentIds':[],'sourceVideoIds':[],'shots':[{'seconds':f'{i*10}–{i*10+10}s','voice':'修改后：展示具体诊断步骤。' if data['audit'] else '初稿：先找问题。','visual':'报告演示','overlay':'诊断','purpose':'明确交付'} for i in range(3)],'critique':{'strengths':['有场景'],'weaknesses':[],'nextTest':'测试开头'},'evidenceGaps':[]},'changes':['增加报告操作画面'] if data['audit'] else []}
+  r={'script':{'title':'先看孩子卡在哪里','angle':'把诊断说具体','structure':'问题 → 演示 → 引导','sourceCommentIds':[],'sourceVideoIds':[data['strategy']['videoId']],'shots':[{'seconds':f'{i*10}–{i*10+10}s','voice':'修改后：展示具体诊断步骤。' if data['audit'] else '初稿：先找问题。','visual':'报告演示','overlay':'诊断','purpose':'明确交付'} for i in range(3)],'critique':{'strengths':['有场景'],'weaknesses':[],'nextTest':'测试开头'},'evidenceGaps':[]},'changes':['增加报告操作画面'] if data['audit'] else []}
  route.fulfill(status=200,content_type='application/json',body=json.dumps({'choices':[{'message':{'content':json.dumps(r)},'finish_reason':'stop'}]}))
 try:
  with sync_playwright() as p:
@@ -63,14 +67,27 @@ try:
   assert audits==3
   assert sum('写一条新脚本' in t for t in calls)==1
   assert sum('重新修改' in t for t in calls)==1
+  page.locator('[data-action="script-sources"]').click()
+  expect(page.locator('#dialog')).to_contain_text('本次参考 1')
+  page.locator('[data-action="close"]').click()
+  page.locator('[data-action="add-review"]').click()
+  page.locator('[name="label"]').fill('测试复盘')
+  page.locator('[name="ctr"]').fill('1')
+  page.locator('[name="baseline_ctr"]').fill('3')
+  page.locator('[data-form="review"] [type="submit"]').click()
+  expect(page.locator('.simple-result')).to_have_count(2)
+  expect(page.locator('.simple-result').first).to_contain_text('V2')
+  saved=json.loads(page.evaluate('localStorage.getItem("qianchuan.personal.workspace.v1")'))
+  assert saved['scripts'][-1]['parentId']==saved['scripts'][-2]['id']
+  assert saved['scripts'][-1]['reviewId']==saved['reviews'][-1]['id']
   page.reload()
-  expect(page.locator('.simple-result')).to_have_count(1)
-  expect(page.locator('[name="requirements"]')).to_have_value('给高中家长写1条45秒口播，主打诊断。')
+  expect(page.locator('.simple-result')).to_have_count(2)
+  expect(page.locator('[name="requirements"]')).to_contain_text('投放复盘')
   page.screenshot(path='/tmp/qianchuan-simple-tested.png',full_page=True)
   page.set_viewport_size({'width':390,'height':844})
   assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
   assert not errors,errors
   browser.close()
-  print('PASS: three-input default page, hidden advanced tools, saved inputs without key/comments, mocked learn-draft-audit-revise-reaudit, resume failed review without rewriting, persisted final result, key isolation and mobile layout.')
+  print('PASS: three-input default page, hidden advanced tools, saved inputs without key/comments, mocked learn-draft-audit-revise-reaudit, resume failed review without rewriting, research report/source modal, data review to V2 with original retained, persisted finals, key isolation and mobile layout.')
 finally:
  server.shutdown();server.server_close();thread.join(timeout=3)

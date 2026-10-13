@@ -11,7 +11,7 @@
     "start": "node --use-env-proxy server.mjs",
     "dev": "node --use-env-proxy --watch server.mjs",
     "test": "node --test test/*.test.mjs",
-    "check": "node --check server.mjs && node --check lib/domain.mjs && node --check lib/ai.mjs && node --check lib/agent.mjs && node --check lib/simple-agent.mjs && node --check lib/workspace.mjs && node --check lib/browser-entry.mjs && node --check public/app.js",
+    "check": "node --check server.mjs && node --check lib/domain.mjs && node --check lib/ai.mjs && node --check lib/agent.mjs && node --check lib/simple-agent.mjs && node --check lib/simple-research.mjs && node --check lib/workspace.mjs && node --check lib/browser-entry.mjs && node --check public/app.js",
     "build:standalone": "node scripts/build-standalone.mjs"
   },
   "dependencies": {
