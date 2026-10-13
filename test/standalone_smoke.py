@@ -22,7 +22,7 @@ try:
   page.on('pageerror',lambda e:errors.append(str(e)))
   page.on('request',lambda r:requests.append(r.url))
   url=f'http://127.0.0.1:{server.server_port}/千川研习社-双击打开.html'
-  page.goto(url)
+  page.goto(url+'#materials')
   expect(page.locator('h1')).to_contain_text('把资料放进来')
   expect(page.locator('.material-grid .panel')).to_have_count(3)
   page.locator('.material-grid [data-action="go-product"]').click()

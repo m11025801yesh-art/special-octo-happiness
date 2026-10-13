@@ -23,7 +23,7 @@ with tempfile.TemporaryDirectory(prefix='qianchuan-browser-') as data_dir:
             browser = p.chromium.launch(executable_path=os.environ.get('CHROMIUM_PATH', '/usr/bin/chromium'), headless=True)
             page = browser.new_page(viewport={'width': 1440, 'height': 1000})
             page.on('pageerror', lambda error: errors.append(str(error)))
-            page.goto(url)
+            page.goto(url+'#materials')
             expect(page.locator('h1').first).to_contain_text('把资料放进来')
             page.locator('.sidebar [data-page="home"]').click()
             expect(page.locator('h1').first).to_contain_text('今天')
