@@ -51,7 +51,7 @@ test('内置脚本只追加一次，不覆盖已有资料、用户脚本或修�
  assert.equal(s.scripts.length,21);assert.equal(s.scripts[1].result.title,'用户修改后的标题');assert.deepEqual(s.comments,originalComments);
 });
 test('保存失败会回滚内存状态及密钥，不显示虚假的已保存结果',async()=>{
- const initial=demoState();
+ const initial=demoState();initial.settings={provider:'deepseek',model:'deepseek-chat'};
  const w=createWorkspace({initial,persist:()=>{throw new Error('quota exceeded');},localMode:true});
  await assert.rejects(w.request('/api/comments',{text:'一条尚未保存的评论',source:'测试'}),/quota/);
  assert.equal(w.getState().comments.length,12);

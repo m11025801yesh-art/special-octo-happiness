@@ -125,10 +125,12 @@ python3 scripts/export-script-documents.py
 
 ```text
 QIANCHUAN_AI_KEY=<通过环境设置注入，不写在仓库中>
-QIANCHUAN_AI_PROVIDER=deepseek
+QIANCHUAN_AI_PROVIDER=openai
 ```
 
-`QIANCHUAN_AI_PROVIDER` 可为 `deepseek`（默认）、`openai`、`qwen`。前端选择的服务商必须与环境密钥提供商匹配。密钥值不会通过状态接口返回。三个服务对应的 HTTPS 目的域名分别是：
+新工作台默认选择 OpenAI / `gpt-4.1-mini`，已有配置保留。连接入口支持 `?provider=openai#settings`，预选 OpenAI，点击保存后生效。OpenAI API 按 API 账户单独计费，不包含在 ChatGPT 订阅中。
+
+`QIANCHUAN_AI_PROVIDER` 可为 `deepseek`、`openai`、`qwen`。服务器上的通用环境密钥为兼容旧配置，未填写服务商时仍按 DeepSeek 处理；使用 OpenAI 环境密钥必须显式设置 `QIANCHUAN_AI_PROVIDER=openai`。前端选择的服务商必须与环境密钥提供商匹配。密钥值不会通过状态接口返回。三个服务对应的 HTTPS 目的域名分别是：
 
 - DeepSeek：`api.deepseek.com`
 - OpenAI：`api.openai.com`

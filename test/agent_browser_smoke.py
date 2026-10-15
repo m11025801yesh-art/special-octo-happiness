@@ -76,6 +76,7 @@ try:
         expect(page.locator('#toast')).to_contain_text('配置并测试模型')
         assert not calls
         page.locator('.sidebar [data-page="settings"]').click()
+        page.locator('[name="provider"]').select_option('deepseek')
         page.locator('[name="key"]').fill('browser-fixture-not-real')
         page.locator('[data-form="settings"] [type="submit"]').click()
         expect(page.locator('.connection')).to_contain_text('当前网页会话')
@@ -88,6 +89,7 @@ try:
         page.reload()
         expect(page.locator('.agent-task')).to_contain_text('本步骤失败，可重试')
         page.locator('.sidebar [data-page="settings"]').click()
+        page.locator('[name="provider"]').select_option('deepseek')
         page.locator('[name="key"]').fill('browser-fixture-not-real')
         page.locator('[data-form="settings"] [type="submit"]').click()
         expect(page.locator('.connection')).to_contain_text('当前网页会话')

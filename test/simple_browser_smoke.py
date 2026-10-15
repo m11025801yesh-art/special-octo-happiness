@@ -16,6 +16,9 @@ thread=Thread(target=server.serve_forever,daemon=True);thread.start()
 calls=[];audits=0
 def respond(route):
  global audits
+ assert route.request.url=='https://api.openai.com/v1/chat/completions'
+ assert route.request.post_data_json['model']=='gpt-4.1-mini'
+ assert route.request.post_data_json['response_format']=={'type':'json_object'}
  task,raw=route.request.post_data_json['messages'][1]['content'].split('\n\n下面是素材 JSON：\n',1)
  data=json.loads(raw);calls.append(task)
  if task.startswith('简洁创作：先学习'):
@@ -36,7 +39,7 @@ try:
  with sync_playwright() as p:
   browser=p.chromium.launch(executable_path='/usr/bin/chromium',headless=True)
   context=browser.new_context(viewport={'width':1440,'height':1000})
-  context.route('https://api.deepseek.com/**',respond)
+  context.route('https://api.openai.com/**',respond)
   page=context.new_page();errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
   page.goto(f'http://127.0.0.1:{server.server_port}/千川研习社-双击打开.html')
   expect(page.locator('[data-form="simple"] textarea')).to_have_count(3)
@@ -48,6 +51,8 @@ try:
   expect(page.locator('#toast')).to_contain_text('请先连接 AI')
   assert not calls
   page.locator('.sidebar [data-page="settings"]').click()
+  expect(page.locator('[name="provider"]')).to_have_value('openai')
+  expect(page.locator('[name="model"]')).to_have_value('gpt-4.1-mini')
   page.locator('[name="key"]').fill('simple-browser-test-not-real')
   page.locator('[data-form="settings"] [type="submit"]').click()
   expect(page.locator('.connection')).to_contain_text('当前网页会话')
@@ -83,6 +88,21 @@ try:
   page.reload()
   expect(page.locator('.simple-result')).to_have_count(2)
   expect(page.locator('[name="requirements"]')).to_contain_text('投放复盘')
+  # An existing user's provider is not silently overwritten by an OpenAI setup link.
+  saved['settings']={'provider':'deepseek','model':'deepseek-chat'}
+  page.evaluate('(s)=>localStorage.setItem("qianchuan.personal.workspace.v1",JSON.stringify(s))',saved)
+  page.goto(f'http://127.0.0.1:{server.server_port}/千川研习社-双击打开.html?provider=openai#settings')
+  expect(page.locator('[name="provider"]')).to_have_value('openai')
+  expect(page.locator('[name="model"]')).to_have_value('gpt-4.1-mini')
+  assert json.loads(page.evaluate('localStorage.getItem("qianchuan.personal.workspace.v1")'))['settings']['provider']=='deepseek'
+  page.locator('[name="key"]').fill('openai-preset-test-not-real')
+  page.locator('[data-form="settings"] [type="submit"]').click()
+  expect(page.locator('.connection')).to_contain_text('当前网页会话')
+  assert 'provider=' not in page.url
+  stored=page.evaluate('localStorage.getItem("qianchuan.personal.workspace.v1")')
+  assert json.loads(stored)['settings']['provider']=='openai'
+  assert 'openai-preset-test-not-real' not in stored
+  page.locator('.sidebar [data-page="simple"]').click()
   page.screenshot(path='/tmp/qianchuan-simple-tested.png',full_page=True)
   page.set_viewport_size({'width':390,'height':844})
   assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
